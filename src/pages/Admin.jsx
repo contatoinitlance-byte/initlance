@@ -199,7 +199,7 @@ export default function Admin() {
         try {
             await logout(false);
         } finally {
-            navigate('/login', { replace: true });
+            navigate('/', { replace: true });
         }
     };
 
