@@ -1,54 +1,39 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import supabase from '@/api/supabaseClient';
-import { getRoleRedirectPath, getSafeRedirectPath, useAuth } from '@/lib/AuthContext';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { checkUserAuth } = useAuth();
   const [error, setError] = useState('');
 
   useEffect(() => {
     const finishAuth = async () => {
       if (!supabase) {
-        setError('Supabase não está configurado.');
+        setError('Supabase nao esta configurado.');
         return;
       }
 
-      const next = getSafeRedirectPath(searchParams.get('next'), '/marketplace');
-
       try {
-        let { data, error: sessionError } = await supabase.auth.getSession();
-
-        if (!data?.session) {
-          await new Promise((resolve) => setTimeout(resolve, 500));
-          ({ data, error: sessionError } = await supabase.auth.getSession());
-        }
+        const { data, error: sessionError } = await supabase.auth.getSession();
 
         if (sessionError) throw sessionError;
 
-        const authUser = data?.session?.user;
-        if (!authUser) {
+        if (!data?.session) {
           navigate('/login', { replace: true });
           return;
         }
 
-        const checkedUser = await checkUserAuth();
-
-        if (next.startsWith('/role-selection')) {
-          navigate(next, { replace: true });
-          return;
-        }
-
-        navigate(next || getRoleRedirectPath((checkedUser || authUser).user_metadata?.role), { replace: true });
+        await checkUserAuth();
+        navigate('/marketplace', { replace: true });
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Falha ao finalizar autenticação.');
+        setError(err instanceof Error ? err.message : 'Falha ao finalizar autenticacao.');
       }
     };
 
     finishAuth();
-  }, [checkUserAuth, navigate, searchParams]);
+  }, [checkUserAuth, navigate]);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-background">
