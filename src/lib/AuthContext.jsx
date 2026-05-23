@@ -6,11 +6,35 @@ import { db, getBanState, isAdminEmail } from '@/api/supabaseData';
 const AuthContext = createContext();
 const ADMIN_SESSION_KEY = 'initlance_admin_session';
 const ADMIN_EMAIL = 'pedrooInit@admin';
+const APP_ROLES = ['freelancer', 'client', 'admin'];
+
+const isAppRole = (role) => APP_ROLES.includes(role);
+
+const getAuthRole = (user) => {
+    if (!user) return null;
+    const metadata = user.user_metadata || user.raw_user_meta_data || {};
+    const appMetadata = user.app_metadata || {};
+    if (isAppRole(metadata.role)) return metadata.role;
+    if (isAppRole(appMetadata.role)) return appMetadata.role;
+    if (isAppRole(user.role)) return user.role;
+    return null;
+};
+
+const wasProfileUpdatedAfterCreation = (profile) => {
+    if (!profile?.created_at || !profile?.updated_at) return false;
+    return Math.abs(new Date(profile.updated_at).getTime() - new Date(profile.created_at).getTime()) > 1000;
+};
+
+const getProfileSelectedRole = (profile) => {
+    if (!isAppRole(profile?.role)) return null;
+    if (profile.role !== 'freelancer') return profile.role;
+    return wasProfileUpdatedAfterCreation(profile) ? profile.role : null;
+};
 
 const normalizeUser = (user) => {
     if (!user) return null;
     const metadata = user.user_metadata || user.raw_user_meta_data || {};
-    const role = metadata.role || user.role;
+    const role = getAuthRole(user);
     return {
         ...user,
         full_name: user.full_name || metadata.full_name || metadata.name,
@@ -22,6 +46,7 @@ const normalizeUser = (user) => {
 const mergeAuthUserWithProfile = (authUser, profile) => {
     const normalized = normalizeUser(authUser);
     if (!normalized) return null;
+    const role = getAuthRole(authUser) || getProfileSelectedRole(profile);
 
     return {
         ...(profile || {}),
@@ -30,7 +55,7 @@ const mergeAuthUserWithProfile = (authUser, profile) => {
         avatar_url: profile?.avatar_url || normalized.avatar_url,
         foto_perfil: profile?.foto_perfil || normalized.foto_perfil,
         bio: profile?.bio || normalized.bio,
-        role: profile?.role || normalized.role || normalized.user_metadata?.role,
+        role,
     };
 };
 

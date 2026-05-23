@@ -27,7 +27,7 @@ export default function AuthCallback() {
 
         const authUser = await checkUserAuth();
         const redirectUser = authUser || data.session.user;
-        const role = redirectUser?.role || redirectUser?.user_metadata?.role || redirectUser?.raw_user_meta_data?.role;
+        const role = redirectUser?.role;
         navigate(getRoleRedirectPath(role), { replace: true });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Falha ao finalizar autenticacao.');
