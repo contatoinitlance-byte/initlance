@@ -19,7 +19,8 @@ export default function Login() {
   const { getPostAuthRedirect, loginLocalAdmin, checkUserAuth } = useAuth();
   const adminEmail = "pedrooInit@admin";
   const adminPassword = "amandaebiaInit";
-  const nextPath = getSafeRedirectPath(searchParams.get("next"), "/marketplace");
+  const nextParam = searchParams.get("next");
+  const nextPath = nextParam ? getSafeRedirectPath(nextParam) : null;
 
   const handleEmailChange = (/** @type {React.ChangeEvent<HTMLInputElement>} */ e) => {
     setEmail(e.target.value);
