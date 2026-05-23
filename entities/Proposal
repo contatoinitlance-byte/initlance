@@ -1,0 +1,46 @@
+{
+    "name": "Proposal",
+    "type": "object",
+    "properties": {
+        "job_id": {
+            "type": "string",
+            "title": "Job ID"
+        },
+        "freelancer_email": {
+            "type": "string",
+            "title": "Email do Freelancer"
+        },
+        "cliente_email": {
+            "type": "string",
+            "title": "Email do Cliente"
+        },
+        "mensagem": {
+            "type": "string",
+            "title": "Mensagem"
+        },
+        "valor_proposto": {
+            "type": "number",
+            "title": "Valor Proposto (R$)"
+        },
+        "prazo_proposto": {
+            "type": "string",
+            "title": "Prazo Proposto"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "pendente",
+                "aceita",
+                "recusada",
+                "cancelada"
+            ],
+            "default": "pendente"
+        }
+    },
+    "required": [
+        "job_id",
+        "freelancer_email",
+        "cliente_email",
+        "valor_proposto"
+    ]
+}

@@ -1,0 +1,36 @@
+{
+    "name": "Message",
+    "type": "object",
+    "properties": {
+        "sender_email": {
+            "type": "string",
+            "title": "Remetente"
+        },
+        "receiver_email": {
+            "type": "string",
+            "title": "Destinat\u00e1rio"
+        },
+        "conversation_id": {
+            "type": "string",
+            "title": "ID da Conversa"
+        },
+        "content": {
+            "type": "string",
+            "title": "Conte\u00fado"
+        },
+        "lida": {
+            "type": "boolean",
+            "default": false
+        },
+        "job_id": {
+            "type": "string",
+            "title": "Job Relacionado"
+        }
+    },
+    "required": [
+        "sender_email",
+        "receiver_email",
+        "conversation_id",
+        "content"
+    ]
+}

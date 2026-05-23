@@ -1,0 +1,40 @@
+{
+    "name": "Review",
+    "type": "object",
+    "properties": {
+        "remetente_email": {
+            "type": "string",
+            "title": "Email do Remetente"
+        },
+        "destinatario_email": {
+            "type": "string",
+            "title": "Email do Destinat\u00e1rio"
+        },
+        "job_id": {
+            "type": "string",
+            "title": "Job ID"
+        },
+        "nota": {
+            "type": "number",
+            "title": "Nota (1-5)",
+            "minimum": 1,
+            "maximum": 5
+        },
+        "comentario": {
+            "type": "string",
+            "title": "Coment\u00e1rio"
+        },
+        "tipo": {
+            "type": "string",
+            "enum": [
+                "cliente_para_freelancer",
+                "freelancer_para_cliente"
+            ]
+        }
+    },
+    "required": [
+        "remetente_email",
+        "destinatario_email",
+        "nota"
+    ]
+}

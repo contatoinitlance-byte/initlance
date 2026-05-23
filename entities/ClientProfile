@@ -1,0 +1,61 @@
+{
+    "name": "ClientProfile",
+    "type": "object",
+    "properties": {
+        "user_email": {
+            "type": "string",
+            "title": "Email do Usu\u00e1rio"
+        },
+        "nome_empresa": {
+            "type": "string",
+            "title": "Nome da Empresa"
+        },
+        "descricao_empresa": {
+            "type": "string",
+            "title": "Descri\u00e7\u00e3o"
+        },
+        "site_empresa": {
+            "type": "string",
+            "title": "Site"
+        },
+        "logo_empresa": {
+            "type": "string",
+            "title": "Logo"
+        },
+        "vagas_publicadas": {
+            "type": "number",
+            "default": 0
+        },
+        "freelancers_contratados": {
+            "type": "number",
+            "default": 0
+        },
+        "gasto_total": {
+            "type": "number",
+            "default": 0
+        },
+        "projetos_ativos": {
+            "type": "number",
+            "default": 0
+        },
+        "avaliacao_media": {
+            "type": "number",
+            "default": 0
+        },
+        "total_avaliacoes": {
+            "type": "number",
+            "default": 0
+        },
+        "verificado": {
+            "type": "boolean",
+            "default": false
+        },
+        "visualizacoes_perfil": {
+            "type": "number",
+            "default": 0
+        }
+    },
+    "required": [
+        "user_email"
+    ]
+}

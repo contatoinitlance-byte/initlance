@@ -1,0 +1,88 @@
+{
+    "name": "FreelancerStats",
+    "type": "object",
+    "properties": {
+        "user_email": {
+            "type": "string",
+            "title": "Email do Usu\u00e1rio"
+        },
+        "balance": {
+            "type": "number",
+            "title": "Saldo (R$)",
+            "default": 0
+        },
+        "proposals_sent": {
+            "type": "number",
+            "title": "Propostas Enviadas",
+            "default": 0
+        },
+        "proposals_accepted": {
+            "type": "number",
+            "title": "Propostas Aceitas",
+            "default": 0
+        },
+        "active_jobs": {
+            "type": "number",
+            "title": "Jobs Ativos",
+            "default": 0
+        },
+        "portfolio_views": {
+            "type": "number",
+            "title": "Views do Portf\u00f3lio",
+            "default": 0
+        },
+        "proof_score": {
+            "type": "number",
+            "title": "Proof Score",
+            "default": 0
+        },
+        "rank": {
+            "type": "string",
+            "title": "Rank",
+            "enum": [
+                "Rookie",
+                "Builder",
+                "Specialist",
+                "Expert",
+                "Elite"
+            ],
+            "default": "Rookie"
+        },
+        "profile_completion": {
+            "type": "number",
+            "title": "Completude do Perfil (%)",
+            "default": 10
+        },
+        "profissao": {
+            "type": "string",
+            "title": "Profiss\u00e3o"
+        },
+        "github": {
+            "type": "string",
+            "title": "GitHub"
+        },
+        "linkedin": {
+            "type": "string",
+            "title": "LinkedIn"
+        },
+        "website": {
+            "type": "string",
+            "title": "Website"
+        },
+        "habilidades": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "title": "Habilidades"
+        },
+        "valor_hora": {
+            "type": "number",
+            "title": "Valor por Hora (R$)",
+            "default": 0
+        }
+    },
+    "required": [
+        "user_email"
+    ]
+}

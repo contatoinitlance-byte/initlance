@@ -1,0 +1,57 @@
+{
+    "name": "Transaction",
+    "type": "object",
+    "properties": {
+        "usuario_email": {
+            "type": "string",
+            "title": "Email do Usu\u00e1rio"
+        },
+        "tipo": {
+            "type": "string",
+            "enum": [
+                "pagamento",
+                "recebimento",
+                "saque",
+                "taxa",
+                "reembolso"
+            ]
+        },
+        "valor": {
+            "type": "number",
+            "title": "Valor (R$)"
+        },
+        "descricao": {
+            "type": "string",
+            "title": "Descri\u00e7\u00e3o"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "pendente",
+                "concluido",
+                "cancelado",
+                "falhou"
+            ],
+            "default": "pendente"
+        },
+        "metodo_pagamento": {
+            "type": "string",
+            "enum": [
+                "pix",
+                "cartao",
+                "boleto",
+                "saldo"
+            ],
+            "title": "M\u00e9todo de Pagamento"
+        },
+        "job_id": {
+            "type": "string",
+            "title": "Job ID"
+        }
+    },
+    "required": [
+        "usuario_email",
+        "tipo",
+        "valor"
+    ]
+}
