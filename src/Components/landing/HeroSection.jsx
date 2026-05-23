@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/Components/ui/button";
 import { ArrowRight, Play, CheckCircle, Star, Send, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
@@ -105,20 +105,21 @@ function PhoneMockup() {
 }
 
 export default function HeroSection() {
+  const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
 
   const handleContratarTalentos = async (e) => {
     e.preventDefault();
     if (!isAuthenticated) {
-      window.location.href = '/login?next=role-selection&intent=client';
+      navigate(`/login?next=${encodeURIComponent('/role-selection?intent=client')}`);
       return;
     }
     if (user?.role === 'client') {
-      window.location.href = '/client';
+      navigate('/client');
     } else if (!user?.role) {
-      window.location.href = '/role-selection?intent=client';
+      navigate('/role-selection?intent=client');
     } else {
-      window.location.href = '/marketplace';
+      navigate('/marketplace');
     }
   };
   return (

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Briefcase, Building2, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/AuthContext';
@@ -9,6 +9,7 @@ import PlatformLogo from '@/Components/PlatformLogo';
 export default function RoleSelection() {
   const [selecting, setSelecting] = useState(null);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, isAuthenticated, isLoadingAuth, updateUserRole } = useAuth();
   const intent = searchParams.get('intent');
@@ -31,7 +32,7 @@ export default function RoleSelection() {
         });
       }
 
-      window.location.href = role === 'freelancer' ? '/dashboard' : '/client';
+      navigate(role === 'freelancer' ? '/dashboard' : '/client', { replace: true });
     } catch (e) {
       console.error('Role update error:', e);
       setError(e instanceof Error ? e.message : 'Nao foi possivel salvar seu perfil.');

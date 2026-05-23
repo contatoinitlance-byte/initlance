@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import supabase from "@/api/supabaseClient";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
@@ -10,6 +10,7 @@ import GoogleIcon from "@/Components/GoogleIcon";
 import { db } from "@/api/supabaseData";
 
 export default function Register() {
+  const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,7 +48,7 @@ export default function Register() {
           email,
           full_name: fullName,
         });
-        window.location.href = "/role-selection";
+        navigate("/role-selection", { replace: true });
         return;
       }
 

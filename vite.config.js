@@ -10,8 +10,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
       '@/components': path.resolve(__dirname, './src/Components'),
       '@/Components': path.resolve(__dirname, './src/Components'),
-      '@/api': path.resolve(__dirname, './src/API'),
-      '@/API': path.resolve(__dirname, './src/API'),
+      '@/api': path.resolve(__dirname, './src/api'),
+      '@/API': path.resolve(__dirname, './src/api'),
     },
   },
   plugins: [

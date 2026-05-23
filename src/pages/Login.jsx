@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import supabase from "@/api/supabaseClient";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
@@ -7,16 +7,19 @@ import { Label } from "@/Components/ui/label";
 import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/Components/AuthLayout";
 import GoogleIcon from "@/Components/GoogleIcon";
-import { useAuth } from "@/lib/AuthContext";
+import { getSafeRedirectPath, useAuth } from "@/lib/AuthContext";
 
 export default function Login() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { getPostAuthRedirect, loginLocalAdmin } = useAuth();
+  const { getPostAuthRedirect, loginLocalAdmin, checkUserAuth } = useAuth();
   const adminEmail = "pedrooInit@admin";
   const adminPassword = "amandaebiaInit";
+  const nextPath = getSafeRedirectPath(searchParams.get("next"), "/marketplace");
 
   const handleEmailChange = (/** @type {React.ChangeEvent<HTMLInputElement>} */ e) => {
     setEmail(e.target.value);
@@ -33,7 +36,7 @@ export default function Login() {
 
     if (email.trim() === adminEmail && password === adminPassword) {
       loginLocalAdmin();
-      window.location.href = "/admin";
+      navigate("/admin", { replace: true });
       return;
     }
 
@@ -54,7 +57,8 @@ export default function Login() {
       }
 
       if (data?.session) {
-        window.location.href = getPostAuthRedirect(data.session.user);
+        const authUser = await checkUserAuth();
+        navigate(getPostAuthRedirect(authUser || data.session.user, nextPath), { replace: true });
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -77,7 +81,7 @@ export default function Login() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
         },
       });
       if (error) throw error;

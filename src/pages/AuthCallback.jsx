@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import supabase from '@/api/supabaseClient';
-import { getRoleRedirectPath, useAuth } from '@/lib/AuthContext';
+import { getRoleRedirectPath, getSafeRedirectPath, useAuth } from '@/lib/AuthContext';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export default function AuthCallback() {
         return;
       }
 
-      const next = searchParams.get('next');
+      const next = getSafeRedirectPath(searchParams.get('next'), '/marketplace');
 
       try {
         let { data, error: sessionError } = await supabase.auth.getSession();
@@ -34,14 +34,14 @@ export default function AuthCallback() {
           return;
         }
 
-        await checkUserAuth();
+        const checkedUser = await checkUserAuth();
 
-        if (next === 'role-selection') {
-          navigate('/role-selection', { replace: true });
+        if (next.startsWith('/role-selection')) {
+          navigate(next, { replace: true });
           return;
         }
 
-        navigate(getRoleRedirectPath(authUser.user_metadata?.role), { replace: true });
+        navigate(next || getRoleRedirectPath((checkedUser || authUser).user_metadata?.role), { replace: true });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Falha ao finalizar autenticação.');
       }

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 
 import { Toaster } from "@/Components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -142,16 +142,16 @@ const AuthenticatedApp = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <Router>
+    <Router>
+      <AuthProvider>
+        <QueryClientProvider client={queryClientInstance}>
           <AppErrorBoundary>
             <AuthenticatedApp />
           </AppErrorBoundary>
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
-    </AuthProvider>
+          <Toaster />
+        </QueryClientProvider>
+      </AuthProvider>
+    </Router>
   )
 }
 

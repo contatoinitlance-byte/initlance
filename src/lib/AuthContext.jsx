@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import supabase from '@/api/supabaseClient';
 import { db, getBanState, isAdminEmail } from '@/api/supabaseData';
 
@@ -61,12 +62,53 @@ export const getRoleRedirectPath = (role) => {
     return '/role-selection';
 };
 
+export const getSafeRedirectPath = (next, fallback = '/marketplace') => {
+    if (!next) return fallback;
+
+    const normalized = next.startsWith('/') ? next : `/${next}`;
+    if (normalized.startsWith('//') || normalized.includes('://')) return fallback;
+    if (['/login', '/register', '/auth/callback'].includes(normalized)) return fallback;
+
+    return normalized;
+};
+
 export const AuthProvider = ({ children }) => {
+    const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoadingAuth, setIsLoadingAuth] = useState(true);
     const [authError, setAuthError] = useState(null);
     const [authChecked, setAuthChecked] = useState(false);
+
+    const applySession = useCallback(async (authUser) => {
+        if (!authUser) {
+            setUser(null);
+            setIsAuthenticated(false);
+            setAuthError(null);
+            return null;
+        }
+
+        const profile = await getSafeProfile(authUser);
+        const ban = getBanState(profile);
+        if (ban.banned) {
+            await supabase.auth.signOut();
+            setAuthError({
+                type: 'banned',
+                message: ban.permanent
+                    ? 'Sua conta foi banida permanentemente.'
+                    : `Sua conta esta suspensa ate ${ban.until?.toLocaleString('pt-BR') || 'nova analise'}.`,
+            });
+            setIsAuthenticated(false);
+            setUser(null);
+            return null;
+        }
+
+        const mergedUser = mergeAuthUserWithProfile(authUser, profile);
+        setUser(mergedUser);
+        setIsAuthenticated(true);
+        setAuthError(null);
+        return mergedUser;
+    }, []);
 
     useEffect(() => {
         let unsubscribe;
@@ -96,24 +138,7 @@ export const AuthProvider = ({ children }) => {
             }
 
             if (data?.session?.user) {
-                const normalized = normalizeUser(data.session.user);
-                const profile = await getSafeProfile(data.session.user);
-                const ban = getBanState(profile);
-                if (ban.banned) {
-                    await supabase.auth.signOut();
-                    setAuthError({
-                        type: 'banned',
-                        message: ban.permanent
-                            ? 'Sua conta foi banida permanentemente.'
-                            : `Sua conta esta suspensa ate ${ban.until?.toLocaleString('pt-BR') || 'nova analise'}.`,
-                    });
-                    setIsAuthenticated(false);
-                    setUser(null);
-                } else {
-                    setUser(mergeAuthUserWithProfile(data.session.user, profile));
-                    setIsAuthenticated(true);
-                    setAuthError(null);
-                }
+                await applySession(data.session.user);
             } else {
                 setUser(null);
                 setIsAuthenticated(false);
@@ -122,23 +147,26 @@ export const AuthProvider = ({ children }) => {
             setIsLoadingAuth(false);
             setAuthChecked(true);
 
-            const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+            const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
                 if (session?.user) {
                     setUser(normalizeUser(session.user));
                     setIsAuthenticated(true);
                     setAuthError(null);
+                    setIsLoadingAuth(false);
+                    setAuthChecked(true);
 
                     window.setTimeout(async () => {
-                        const profile = await getSafeProfile(session.user);
-                        setUser(mergeAuthUserWithProfile(session.user, profile));
+                        await applySession(session.user);
                     }, 0);
                 } else {
                     setUser(null);
                     setIsAuthenticated(false);
+                    setIsLoadingAuth(false);
+                    setAuthChecked(true);
                 }
             });
 
-            unsubscribe = subscription?.unsubscribe;
+            unsubscribe = () => subscription?.unsubscribe();
         };
 
         initAuth();
@@ -146,15 +174,17 @@ export const AuthProvider = ({ children }) => {
         return () => {
             unsubscribe?.();
         };
-    }, []);
+    }, [applySession]);
 
-    const checkSupabaseSession = async () => {
+    const checkSupabaseSession = useCallback(async () => {
         const localAdmin = getLocalAdmin();
         if (localAdmin) {
             setUser(localAdmin);
             setIsAuthenticated(true);
             setAuthError(null);
-            return true;
+            setIsLoadingAuth(false);
+            setAuthChecked(true);
+            return localAdmin;
         }
 
         if (!supabase) return false;
@@ -164,28 +194,17 @@ export const AuthProvider = ({ children }) => {
             return false;
         }
         if (data?.session?.user) {
-            const normalized = normalizeUser(data.session.user);
-            const profile = await getSafeProfile(data.session.user);
-            const ban = getBanState(profile);
-            if (ban.banned) {
-                await supabase.auth.signOut();
-                setUser(null);
-                setIsAuthenticated(false);
-                setAuthError({
-                    type: 'banned',
-                    message: ban.permanent
-                        ? 'Sua conta foi banida permanentemente.'
-                        : `Sua conta esta suspensa ate ${ban.until?.toLocaleString('pt-BR') || 'nova analise'}.`,
-                });
-                return false;
-            }
-            setUser(mergeAuthUserWithProfile(data.session.user, profile));
-            setIsAuthenticated(true);
-            setAuthError(null);
-            return true;
+            const mergedUser = await applySession(data.session.user);
+            setIsLoadingAuth(false);
+            setAuthChecked(true);
+            return mergedUser;
         }
+        setUser(null);
+        setIsAuthenticated(false);
+        setIsLoadingAuth(false);
+        setAuthChecked(true);
         return false;
-    };
+    }, [applySession]);
 
     const updateUserRole = async (role) => {
         if (!supabase) {
@@ -211,9 +230,7 @@ export const AuthProvider = ({ children }) => {
         return normalizedUser;
     };
 
-    const getPostAuthRedirect = (authUser = user) => {
-        return getRoleRedirectPath(normalizeUser(authUser)?.role);
-    };
+    const getPostAuthRedirect = (authUser = user, next) => getSafeRedirectPath(next, getRoleRedirectPath(normalizeUser(authUser)?.role));
 
     const loginLocalAdmin = () => {
         const admin = {
@@ -242,12 +259,12 @@ export const AuthProvider = ({ children }) => {
         await supabase.auth.signOut();
 
         if (shouldRedirect) {
-            window.location.href = '/';
+            navigate('/', { replace: true });
         }
     };
 
     const navigateToLogin = () => {
-        window.location.href = '/login';
+        navigate('/login', { replace: true });
     };
 
     return (
