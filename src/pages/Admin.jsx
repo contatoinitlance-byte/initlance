@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import {
     Users, Briefcase, DollarSign, TrendingUp, Trash2, Shield, CheckCircle,
-    Plus, X, Loader2, Swords, Edit2, UserX, RotateCcw
+    Plus, X, Loader2, Swords, Edit2, UserX, RotateCcw, LogOut
 } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -121,7 +121,8 @@ function ChallengeModal({ challenge, onClose, onSaved }) {
 }
 
 export default function Admin() {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('Usuários');
     const [users, setUsers] = useState([]);
     const [jobs, setJobs] = useState([]);
@@ -130,6 +131,7 @@ export default function Admin() {
     const [loading, setLoading] = useState(true);
     const [challengeModal, setChallengeModal] = useState(null); // null | 'new' | challenge obj
     const [banDays, setBanDays] = useState({});
+    const [signingOut, setSigningOut] = useState(false);
 
     useEffect(() => { loadAll(); }, []);
 
@@ -192,18 +194,39 @@ export default function Admin() {
         setUsers(prev => prev.map(item => item.email === targetUser.email ? { ...item, ...updated } : item));
     };
 
+    const handleLogout = async () => {
+        setSigningOut(true);
+        try {
+            await logout(false);
+        } finally {
+            navigate('/login', { replace: true });
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-background p-6">
+        <div className="min-h-screen bg-background p-4 sm:p-6">
             <div className="max-w-6xl mx-auto space-y-6">
                 {/* Header */}
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0">
                         <Shield className="w-5 h-5 text-white" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                         <h1 className="font-heading font-bold text-2xl text-foreground">Painel Admin</h1>
                         <p className="text-sm text-muted-foreground">Gerenciamento da plataforma Initlance · {user?.email}</p>
                     </div>
+                </div>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleLogout}
+                        disabled={signingOut}
+                        className="w-full sm:w-auto h-10 rounded-xl border-border/50 gap-2 flex-shrink-0"
+                    >
+                        {signingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+                        Sair
+                    </Button>
                 </div>
 
                 {/* Stats */}
