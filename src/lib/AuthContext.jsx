@@ -67,7 +67,13 @@ export const getSafeRedirectPath = (next, fallback = '/marketplace') => {
 
     const normalized = next.startsWith('/') ? next : `/${next}`;
     if (normalized.startsWith('//') || normalized.includes('://')) return fallback;
-    if (['/login', '/register', '/auth/callback'].includes(normalized)) return fallback;
+    if (
+        normalized.startsWith('/login') ||
+        normalized.startsWith('/register') ||
+        normalized.startsWith('/auth/callback')
+    ) {
+        return fallback;
+    }
 
     return normalized;
 };
